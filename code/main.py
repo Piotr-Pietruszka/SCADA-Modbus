@@ -18,8 +18,9 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.ui.pushButtonSend.clicked.connect(self.writePacket)
 
         # Start reading thread
-        read_thread = threading.Thread(target=self.readModbus)
-        read_thread.start()
+        self.stop_read = False
+        self.read_thread = threading.Thread(target=self.readModbus)
+        self.read_thread.start()
 
     def writePacket(self):
         """
@@ -52,7 +53,7 @@ class ScadaApp(QtWidgets.QMainWindow):
         Reading from serial port
         :return:
         """
-        while 1:
+        while not self.stop_read:
             # Wait until there is data waiting in the serial buffer
             if self.serialPort.in_waiting > 0:
 
@@ -64,6 +65,13 @@ class ScadaApp(QtWidgets.QMainWindow):
                 # print(type(rec))
                 print(rec_int)
 
+    def closeEvent(self, event):
+        """
+        Added closing read thread
+        """
+        self.stop_read = True
+        self.read_thread.join()
+        event.accept()
 
 if __name__ == "__main__":
     import sys
