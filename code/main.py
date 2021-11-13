@@ -2,6 +2,7 @@ import serial
 import fixedint
 from gui import *
 import time
+import threading
 
 
 class ScadaApp(QtWidgets.QMainWindow):
@@ -16,41 +17,52 @@ class ScadaApp(QtWidgets.QMainWindow):
         # Push buttons
         self.ui.pushButtonSend.clicked.connect(self.writePacket)
 
+        # Start reading thread
+        read_thread = threading.Thread(target=self.readModbus)
+        read_thread.start()
+
     def writePacket(self):
         """
         Write packet to serial port
         :return: None
         """
-        print("\n\nSending\n\n")
+        print("\nSending\n")
 
-        # Get value from gui and convert it to fixed-size int
+        # if packet_w_string[:2] == "0x":  # hex value given
+        # packet_w_int = fixedint.UInt32(int(packet_w_string, 16))
+        # packet_w_int = fixedint.UInt32(packet_w_string)
+
+        # Get hex value from editbox - to be changed to creating packet from stored values
         packet_w_string = self.ui.lineEditWritePacket.text()
         packet_w_string = packet_w_string.replace(" ", "")  # remove spaces
         try:
-            if packet_w_string[:2] == "0x":  # hex value given
-                packet_w_int = fixedint.UInt32(int(packet_w_string, 16))
-            else:  # decimal value given
-                packet_w_int = fixedint.UInt32(packet_w_string)
+            packet_w_bytes = bytearray.fromhex(packet_w_string)
         except Exception as e:
             print(str(e))
             print("Wrong value given")
             return
 
-        # Here adding CRC, later adding header etc.
+        # Here (or above try-catch) adding CRC, adding header etc.
 
         # write packet to serial port
-
-        packet_w_bytes = packet_w_int.to_bytes(2, 'big')  # change to bytes
         self.serialPort.write(packet_w_bytes)
 
-    def read(self):
+    def readModbus(self):
+        """
+        Reading from serial port
+        :return:
+        """
         while 1:
             # Wait until there is data waiting in the serial buffer
             if self.serialPort.in_waiting > 0:
 
+                # Compose packet from bytes, get value from it
                 rec = self.serialPort.read()  # Read one byte
+
+                rec_int = fixedint.UInt32.from_bytes(rec)
+                self.ui.lineEditResponse.setText("{:x}".format(rec_int))
                 # print(type(rec))
-                print(rec)
+                print(rec_int)
 
 
 if __name__ == "__main__":
