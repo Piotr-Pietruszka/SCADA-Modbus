@@ -1,5 +1,6 @@
 import serial
 import fixedint
+import libscrc
 from gui import *
 import time
 import threading
@@ -21,6 +22,13 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.stop_read = False
         self.read_thread = threading.Thread(target=self.readModbus)
         self.read_thread.start()
+
+        # Declare Instance Variables used for Modbus
+        self.ModbusAddress = 0
+        self.ModbusFunction = 0
+        self.ModbusData = [0] #Array with data. Use functions append and pop to add and remove data bytes
+        self.ModbusCRC = [0, 0]
+        self.ModbusDataToTransmit = [0]
 
     def writePacket(self):
         """
@@ -72,6 +80,50 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.stop_read = True
         self.read_thread.join()
         event.accept()
+
+# Decode the data from rawData
+    def decodeModbusFrame(self, rawData):
+        # Check if CRC is correct
+        self.ModbusCRC[0] = rawData[len(rawData) - 2]
+        self.ModbusCRC[1] = rawData[len(rawData) - 1]
+        rawData.pop(len(rawData) - 1)
+        rawData.pop(len(rawData) - 1)
+        ModbusCRC_16 = (self.ModbusCRC[1]<<8) | self.ModbusCRC[0]
+        CalculatedCRC_16 = libscrc.modbus(self.ModbusCRC)
+        if (CalculatedCRC_16 != ModbusCRC_16):
+            return -1
+        
+        
+        self.ModbusAddress = rawData[0]
+        rawData.pop(0)
+        self.ModbusFunction = rawData[0]
+        
+        i = 0
+        for byte in rawData:
+            self.ModbusData[i] = byte
+            i = i+1
+        return 1
+
+# Encode the data into self.ModbusDataToTransmit
+    def encodeModbusFrame(self):
+        self.ModbusDataToTransmit.clear()
+        self.ModbusDataToTransmit[0] = self.ModbusAddress
+        self.ModbusDataToTransmit[1] = self.ModbusFunction
+        i = 2
+        
+        for byte in self.ModbusData:
+            self.ModbusDataToTransmit[i] = byte
+            i = i + 1
+        self.ModbusDataToTransmit[i] = self.ModbusCRC[0]
+        i = i + 1
+        self.ModbusDataToTransmit[i] = self.ModbusCRC[1]
+
+    def PreprateModbusFrame(self, IModbusAddr, IModbusFcn, IModbusData, IModbusCRC):
+        self.ModbusAddress = IModbusAddr
+        self.ModbusFunction = IModbusFcn
+        self.ModbusData = IModbusData
+        self.ModbusCRC = IModbusCRC
+        self.encodeModbusFrame();
 
 if __name__ == "__main__":
     import sys
