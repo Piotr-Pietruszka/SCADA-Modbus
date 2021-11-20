@@ -15,8 +15,19 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.serialPort = serial.Serial(port="COM5")
         self.i = 0  # Temp - to send response after reading
 
+        self.reg_addresses = {
+            "SilZawNagWst": bytearray(b'\x00\xC8'),  # 200
+            "SilZawChl": bytearray(b'\x00\xCA'),  # 202
+        }
+
+        self.lineEdits_dict = {
+            "SilZawNagWst": self.ui.lineEditWrite_1,
+            "SilZawChl": self.ui.lineEditWrite_2,
+        }
+
         # Push buttons
-        self.ui.pushButtonSend.clicked.connect(self.writePacket)
+        self.ui.pushButtonSend_1.clicked.connect(lambda: self.writeFrame("SilZawNagWst"))
+        self.ui.pushButtonSend_2.clicked.connect(lambda: self.writeFrame("SilZawChl"))
 
         # Start reading thread
         self.stop_read = False
@@ -26,35 +37,36 @@ class ScadaApp(QtWidgets.QMainWindow):
         # Declare Instance Variables used for Modbus
         self.ModbusAddress = 0
         self.ModbusFunction = 0
-        self.ModbusData = [0] #Array with data. Use functions append and pop to add and remove data bytes
+        self.ModbusData = []  # Array with data. Use functions append and pop to add and remove data bytes
         self.ModbusCRC = [0, 0]
-        self.ModbusDataToTransmit = [0]
+        self.ModbusDataToTransmit = []
 
-    def writePacket(self):
+    def writeFrame(self, element):
         """
         Write packet to serial port
         :return: None
         """
-        print("\nSending\n")
+        print(f"\nSending: {element}\n")
 
-        # if packet_w_string[:2] == "0x":  # hex value given
-        # packet_w_int = fixedint.UInt32(int(packet_w_string, 16))
-        # packet_w_int = fixedint.UInt32(packet_w_string)
+        address = self.reg_addresses[element]
+        lineEdit = self.lineEdits_dict[element]
 
-        # Get hex value from editbox - to be changed to creating packet from stored values
-        packet_w_string = self.ui.lineEditWritePacket.text()
-        packet_w_string = packet_w_string.replace(" ", "")  # remove spaces
-        try:
-            packet_w_bytes = bytearray.fromhex(packet_w_string)
-        except Exception as e:
-            print(str(e))
-            print("Wrong value given")
-            return
+        # Get value from editbox
+        write_val_string = lineEdit.text()
+        write_val_bytes = int(write_val_string).to_bytes(length=2, byteorder='big')
 
-        # Here (or above try-catch) adding CRC, adding header etc.
+        ModbusData = address + write_val_bytes
+
+        self.PreprateModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
+                                 IModbusData=ModbusData, IModbusCRC=b'\x07\x08')
 
         # write packet to serial port
-        self.serialPort.write(packet_w_bytes)
+        try:
+            self.serialPort.write(b''.join(self.ModbusDataToTransmit))
+        except Exception as e:
+            print(str(e))
+            return
+
 
     def readModbus(self):
         """
@@ -92,8 +104,7 @@ class ScadaApp(QtWidgets.QMainWindow):
         CalculatedCRC_16 = libscrc.modbus(self.ModbusCRC)
         if (CalculatedCRC_16 != ModbusCRC_16):
             return -1
-        
-        
+
         self.ModbusAddress = rawData[0]
         rawData.pop(0)
         self.ModbusFunction = rawData[0]
@@ -107,23 +118,22 @@ class ScadaApp(QtWidgets.QMainWindow):
 # Encode the data into self.ModbusDataToTransmit
     def encodeModbusFrame(self):
         self.ModbusDataToTransmit.clear()
-        self.ModbusDataToTransmit[0] = self.ModbusAddress
-        self.ModbusDataToTransmit[1] = self.ModbusFunction
-        i = 2
-        
+        self.ModbusDataToTransmit.append(self.ModbusAddress)
+        self.ModbusDataToTransmit.append(self.ModbusFunction)
+
         for byte in self.ModbusData:
-            self.ModbusDataToTransmit[i] = byte
-            i = i + 1
-        self.ModbusDataToTransmit[i] = self.ModbusCRC[0]
-        i = i + 1
-        self.ModbusDataToTransmit[i] = self.ModbusCRC[1]
+            self.ModbusDataToTransmit.append(byte.to_bytes(length=1, byteorder='big'))
+
+        self.ModbusDataToTransmit.append(self.ModbusCRC[0].to_bytes(length=1, byteorder='big'))
+        self.ModbusDataToTransmit.append(self.ModbusCRC[1].to_bytes(length=1, byteorder='big'))
 
     def PreprateModbusFrame(self, IModbusAddr, IModbusFcn, IModbusData, IModbusCRC):
         self.ModbusAddress = IModbusAddr
         self.ModbusFunction = IModbusFcn
         self.ModbusData = IModbusData
         self.ModbusCRC = IModbusCRC
-        self.encodeModbusFrame();
+        self.encodeModbusFrame()
+
 
 if __name__ == "__main__":
     import sys
