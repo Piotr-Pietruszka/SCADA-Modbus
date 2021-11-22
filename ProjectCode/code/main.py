@@ -64,14 +64,23 @@ class ScadaApp(QtWidgets.QMainWindow):
         Write packet to serial port
         :return: None
         """
-        print(f"\nSending: {element}\n")
+        print(f"Sending: {element}")
 
         address = self.reg_addresses[element]
         lineEdit = self.lineEdits_dict[element]
 
         # Get value from editbox
-        write_val_string = lineEdit.text()
-        write_val_bytes = int(write_val_string).to_bytes(length=2, byteorder='big')
+        try:
+            write_val_string = lineEdit.text()
+            write_val_bytes = int(write_val_string).to_bytes(length=2, byteorder='big')
+            if int(write_val_string) > 255:
+                raise
+        except:
+            error_msg_box = QtWidgets.QMessageBox()
+            error_msg_box.setWindowTitle("Error")
+            error_msg_box.setText('Wrong value given')
+            x = error_msg_box.exec_()
+            return x
 
         ModbusData = address + write_val_bytes
 
@@ -162,11 +171,11 @@ class ScadaApp(QtWidgets.QMainWindow):
         for byte in self.ModbusData:
             self.ModbusDataToTransmit.append(byte.to_bytes(length=1, byteorder='big'))
         #remove 'b\n'
-        self.ModbusDataToTransmit.pop(len(self.ModbusDataToTransmit) - 1)
+        # self.ModbusDataToTransmit.pop(len(self.ModbusDataToTransmit) - 1)
 
         #print("Calculating CRC from:")
         #print(self.ModbusDataToTransmit)
-        self.ModbusCRC = libscrc.modbus(self.ModbusDataToTransmit)
+        self.ModbusCRC = (libscrc.modbus(b''.join(self.ModbusDataToTransmit))).to_bytes(length=2, byteorder='little')
 
         self.ModbusDataToTransmit.append(self.ModbusCRC[0].to_bytes(length=1, byteorder='big'))
         self.ModbusDataToTransmit.append(self.ModbusCRC[1].to_bytes(length=1, byteorder='big'))
