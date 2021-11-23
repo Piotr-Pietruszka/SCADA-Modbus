@@ -28,6 +28,7 @@ class Ui_MainWindow(object):
         self.label.setObjectName("label")
         self.lineEditResponse = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEditResponse.setGeometry(QtCore.QRect(940, 370, 141, 20))
+        self.lineEditResponse.setReadOnly(True)
         self.lineEditResponse.setObjectName("lineEditResponse")
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(10, 410, 241, 16))
@@ -86,9 +87,6 @@ class Ui_MainWindow(object):
         font.setPointSize(10)
         self.label_9.setFont(font)
         self.label_9.setObjectName("label_9")
-        self.textBrowser_1 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_1.setGeometry(QtCore.QRect(20, 110, 131, 31))
-        self.textBrowser_1.setObjectName("textBrowser_1")
         self.label_10 = QtWidgets.QLabel(self.centralwidget)
         self.label_10.setGeometry(QtCore.QRect(20, 90, 131, 16))
         self.label_10.setObjectName("label_10")
@@ -117,53 +115,17 @@ class Ui_MainWindow(object):
         self.label_18.setGeometry(QtCore.QRect(550, 270, 231, 16))
         self.label_18.setObjectName("label_18")
         self.label_19 = QtWidgets.QLabel(self.centralwidget)
-        self.label_19.setGeometry(QtCore.QRect(830, 90, 201, 16))
+        self.label_19.setGeometry(QtCore.QRect(810, 90, 201, 16))
         self.label_19.setObjectName("label_19")
         self.label_20 = QtWidgets.QLabel(self.centralwidget)
-        self.label_20.setGeometry(QtCore.QRect(830, 150, 231, 16))
+        self.label_20.setGeometry(QtCore.QRect(810, 150, 281, 16))
         self.label_20.setObjectName("label_20")
         self.label_21 = QtWidgets.QLabel(self.centralwidget)
-        self.label_21.setGeometry(QtCore.QRect(830, 210, 221, 16))
+        self.label_21.setGeometry(QtCore.QRect(810, 210, 221, 16))
         self.label_21.setObjectName("label_21")
         self.label_22 = QtWidgets.QLabel(self.centralwidget)
-        self.label_22.setGeometry(QtCore.QRect(830, 270, 231, 16))
+        self.label_22.setGeometry(QtCore.QRect(810, 270, 231, 16))
         self.label_22.setObjectName("label_22")
-        self.textBrowser_2 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_2.setGeometry(QtCore.QRect(20, 170, 131, 31))
-        self.textBrowser_2.setObjectName("textBrowser_2")
-        self.textBrowser_3 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_3.setGeometry(QtCore.QRect(20, 220, 131, 31))
-        self.textBrowser_3.setObjectName("textBrowser_3")
-        self.textBrowser_4 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_4.setGeometry(QtCore.QRect(20, 280, 131, 31))
-        self.textBrowser_4.setObjectName("textBrowser_4")
-        self.textBrowser_6 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_6.setGeometry(QtCore.QRect(550, 110, 131, 31))
-        self.textBrowser_6.setObjectName("textBrowser_6")
-        self.textBrowser_7 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_7.setGeometry(QtCore.QRect(550, 170, 131, 31))
-        self.textBrowser_7.setObjectName("textBrowser_7")
-        self.textBrowser_8 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_8.setGeometry(QtCore.QRect(550, 230, 131, 31))
-        self.textBrowser_8.setObjectName("textBrowser_8")
-        self.textBrowser_9 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_9.setGeometry(QtCore.QRect(550, 290, 131, 31))
-        self.textBrowser_9.setObjectName("textBrowser_9")
-        self.textBrowser_10 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_10.setGeometry(QtCore.QRect(830, 110, 131, 31))
-        self.textBrowser_10.setObjectName("textBrowser_10")
-        self.textBrowser_11 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_11.setGeometry(QtCore.QRect(830, 170, 131, 31))
-        self.textBrowser_11.setObjectName("textBrowser_11")
-        self.textBrowser_12 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_12.setGeometry(QtCore.QRect(830, 230, 131, 31))
-        self.textBrowser_12.setObjectName("textBrowser_12")
-        self.textBrowser_13 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_13.setGeometry(QtCore.QRect(830, 290, 131, 31))
-        self.textBrowser_13.setObjectName("textBrowser_13")
-        self.textBrowser_5 = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser_5.setGeometry(QtCore.QRect(240, 110, 131, 31))
-        self.textBrowser_5.setObjectName("textBrowser_5")
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setGeometry(QtCore.QRect(520, 70, 20, 281))
         self.line_3.setFrameShape(QtWidgets.QFrame.VLine)
@@ -239,6 +201,58 @@ class Ui_MainWindow(object):
         self.line_5.setFrameShape(QtWidgets.QFrame.VLine)
         self.line_5.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_5.setObjectName("line_5")
+        self.lineEditValue_1 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_1.setGeometry(QtCore.QRect(20, 110, 191, 21))
+        self.lineEditValue_1.setReadOnly(True)
+        self.lineEditValue_1.setObjectName("lineEditValue_1")
+        self.lineEditValue_2 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_2.setGeometry(QtCore.QRect(20, 170, 191, 21))
+        self.lineEditValue_2.setReadOnly(True)
+        self.lineEditValue_2.setObjectName("lineEditValue_2")
+        self.lineEditValue_3 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_3.setGeometry(QtCore.QRect(20, 220, 191, 21))
+        self.lineEditValue_3.setReadOnly(True)
+        self.lineEditValue_3.setObjectName("lineEditValue_3")
+        self.lineEditValue_4 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_4.setGeometry(QtCore.QRect(20, 280, 191, 21))
+        self.lineEditValue_4.setReadOnly(True)
+        self.lineEditValue_4.setObjectName("lineEditValue_4")
+        self.lineEditValue_5 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_5.setGeometry(QtCore.QRect(240, 110, 191, 21))
+        self.lineEditValue_5.setReadOnly(True)
+        self.lineEditValue_5.setObjectName("lineEditValue_5")
+        self.lineEditValue_6 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_6.setGeometry(QtCore.QRect(550, 110, 191, 21))
+        self.lineEditValue_6.setReadOnly(True)
+        self.lineEditValue_6.setObjectName("lineEditValue_6")
+        self.lineEditValue_7 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_7.setGeometry(QtCore.QRect(550, 170, 191, 21))
+        self.lineEditValue_7.setReadOnly(True)
+        self.lineEditValue_7.setObjectName("lineEditValue_7")
+        self.lineEditValue_8 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_8.setGeometry(QtCore.QRect(550, 230, 191, 21))
+        self.lineEditValue_8.setReadOnly(True)
+        self.lineEditValue_8.setObjectName("lineEditValue_8")
+        self.lineEditValue_9 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_9.setGeometry(QtCore.QRect(550, 290, 191, 21))
+        self.lineEditValue_9.setReadOnly(True)
+        self.lineEditValue_9.setObjectName("lineEditValue_9")
+        self.lineEditValue_10 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_10.setGeometry(QtCore.QRect(810, 110, 191, 21))
+        self.lineEditValue_10.setReadOnly(True)
+        self.lineEditValue_10.setObjectName("lineEditValue_10")
+        self.lineEditValue_11 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_11.setGeometry(QtCore.QRect(810, 170, 191, 21))
+        self.lineEditValue_11.setReadOnly(True)
+        self.lineEditValue_11.setObjectName("lineEditValue_11")
+        self.lineEditValue_12 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_12.setGeometry(QtCore.QRect(810, 230, 191, 21))
+        self.lineEditValue_12.setReadOnly(True)
+        self.lineEditValue_12.setObjectName("lineEditValue_12")
+        self.lineEditValue_13 = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEditValue_13.setGeometry(QtCore.QRect(810, 290, 191, 21))
+        self.lineEditValue_13.setReadOnly(True)
+        self.lineEditValue_13.setObjectName("lineEditValue_13")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1090, 21))
@@ -270,11 +284,6 @@ class Ui_MainWindow(object):
         self.label_7.setText(_translate("MainWindow", "ZMIEN STAN WYJŚĆ"))
         self.label_8.setText(_translate("MainWindow", "WEJSCIA"))
         self.label_9.setText(_translate("MainWindow", "WYJSCIA"))
-        self.textBrowser_1.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
         self.label_10.setText(_translate("MainWindow", "Czujnik temp. zewnetrznej"))
         self.label_11.setText(_translate("MainWindow", "Czujnik temp. powietrza wywiewanego"))
         self.label_12.setText(_translate("MainWindow", "Termostat p-zamr. nagrzewnicy [true/false]"))
@@ -285,69 +294,9 @@ class Ui_MainWindow(object):
         self.label_17.setText(_translate("MainWindow", "Prędkość obrotowa wentylatora nawieru [%]"))
         self.label_18.setText(_translate("MainWindow", "Prędkość obrotowa wentylatora wywieru [%] "))
         self.label_19.setText(_translate("MainWindow", "Recylkulacja [%]"))
-        self.label_20.setText(_translate("MainWindow", "Załączenie pompy nagrzewnicy wstępnej  [%]"))
+        self.label_20.setText(_translate("MainWindow", "Załączenie pompy nagrzewnicy wstępnej  [true/false]"))
         self.label_21.setText(_translate("MainWindow", "Załączenie wentylatora nawiewu [true/false]"))
         self.label_22.setText(_translate("MainWindow", "Załączenie wentylatora wywieru [true/talse]"))
-        self.textBrowser_2.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_3.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_4.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_6.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_7.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_8.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_9.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_10.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_11.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_12.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_13.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
-        self.textBrowser_5.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">UNKNOWN</span></p></body></html>"))
         self.pushButtonSend_3.setText(_translate("MainWindow", "Wyślij"))
         self.label_3.setText(_translate("MainWindow", "Predkość obrotowa wentylatora nawiewu 0-255"))
         self.pushButtonSend_4.setText(_translate("MainWindow", "Wyślij"))
@@ -360,6 +309,19 @@ class Ui_MainWindow(object):
         self.label_26.setText(_translate("MainWindow", "Załączenie wentylatora nawiewu 0-1"))
         self.label_27.setText(_translate("MainWindow", "Załączenie wentylatora wywiewu 0-1"))
         self.pushButtonSend_8.setText(_translate("MainWindow", "Wyślij"))
+        self.lineEditValue_1.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_2.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_3.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_4.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_5.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_6.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_7.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_8.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_9.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_10.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_11.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_12.setText(_translate("MainWindow", "UNKNOWN"))
+        self.lineEditValue_13.setText(_translate("MainWindow", "UNKNOWN"))
 
 
 if __name__ == "__main__":

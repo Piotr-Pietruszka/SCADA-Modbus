@@ -60,8 +60,11 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.ModbusDataReceived = []
         self.ExpectedReceiveLength = 0
 
+        self.Register301Value = 0
+        self.Register302Value = 0
+
     def writeFrame(self, element):
-        print("!> Calling writeFrame \n")
+        print("!> Calling writeFrame")
         """
         Write packet to serial port
         :return: None
@@ -71,25 +74,69 @@ class ScadaApp(QtWidgets.QMainWindow):
         address = self.reg_addresses[element]
         lineEdit = self.lineEdits_dict[element]
 
-        # Get value from editbox
-        try:
-            write_val_string = lineEdit.text()
-            write_val_bytes = int(write_val_string).to_bytes(length=2, byteorder='big')
-            if int(write_val_string) > 255:
-                raise
-        except:
-            error_msg_box = QtWidgets.QMessageBox()
-            error_msg_box.setWindowTitle("Error")
-            error_msg_box.setText('Wrong value given')
-            x = error_msg_box.exec_()
-            return x
-
-        ModbusData = address + write_val_bytes
-
-        # TODO: run PrepareModbusFrame with different arguments depending on what button was pressed
-        # (Binary outputs require different operations)
-        self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
-                                 IModbusData=ModbusData)
+        if (("SilZawNagWst" == element) or \
+            ("SilZawChl" == element) or \
+            ("PrObrWentNaw" == element) or \
+            ("PrObrWentWyw" == element) or \
+            ("Recyrkulacja" == element)):
+            # Get value from editbox
+            print("!> Writing 2 bytes")
+            try:
+                write_val_string = lineEdit.text()
+                write_val_bytes = int(write_val_string).to_bytes(length=2, byteorder='big')
+                if (int(write_val_string) > 255):
+                    raise
+            except:
+                error_msg_box = QtWidgets.QMessageBox()
+                error_msg_box.setWindowTitle("Error")
+                error_msg_box.setText('Wrong value given')
+                x = error_msg_box.exec_()
+                return x
+            ModbusData = address + write_val_bytes
+            self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
+                                    IModbusData=ModbusData)
+        elif (("ZalPompNagWst" == element) or \
+             ("ZalWentNaw" == element) or \
+             ("ZalWentWyw" == element)):
+            # Get value from editbox
+            print("!> Writing bit")
+            try:
+                write_val_string = lineEdit.text()
+                # Reg 301.0 - shift=0
+                if ("ZalPompNagWst" == element):
+                    if (0 == int(write_val_string)):
+                        write_val_int = self.Register301Value & 0b1111111111111110
+                    else:
+                        write_val_int = self.Register301Value | 0b0000000000000001
+                # Reg 302.0 - shift=0
+                elif ("ZalWentNaw" == element):
+                    if (0 == int(write_val_string)):
+                        write_val_int = self.Register302Value & 0b1111111111111110
+                    else:
+                        write_val_int = self.Register302Value | 0b0000000000000001
+                # Reg 302.1 - shift=1
+                elif ("ZalWentWyw" == element):
+                    print("!> WRITING THEM WYW")
+                    if (0 == int(write_val_string)):
+                        print("!> WRITING THEM WYW 0")
+                        write_val_int = self.Register302Value & 0b1111111111111100
+                    else:
+                        print("!> WRITING THEM WYW 1")
+                        write_val_int = self.Register302Value | 0b0000000000000010
+                write_val_bytes = write_val_int.to_bytes(length=2, byteorder='big')
+                if (int(write_val_string) > 1):
+                    raise
+            except:
+                error_msg_box = QtWidgets.QMessageBox()
+                error_msg_box.setWindowTitle("Error")
+                error_msg_box.setText('Wrong value given')
+                x = error_msg_box.exec_()
+                return x
+            ModbusData = address + write_val_bytes
+            self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
+                                    IModbusData=ModbusData)
+        else:
+            print("!> writeFrame: element error")
 
         self.ui.logsBrowser.append("OUT: "+' '.join([str(hex(int.from_bytes(item, "big"))) for item in self.ModbusDataToTransmit]))
         # write packet to serial port
@@ -145,10 +192,7 @@ class ScadaApp(QtWidgets.QMainWindow):
 
 # Decode the data from rawData
     def decodeModbusFrame(self, rawData):
-        print("!> calling decodeModbusFrame, Data: ")
-        print(rawData)
-        print("Data length:")
-        print(len(rawData))
+        print("!> calling decodeModbusFrame")
         # Check if CRC is correct
         byte1 = rawData[len(rawData) - 2]
         byte1 = rawData[len(rawData) - 1]
@@ -212,11 +256,13 @@ class ScadaApp(QtWidgets.QMainWindow):
         print("!> calling ProcessModbusFrame")
         self.ui.logsBrowser.append("IN:    "+' '.join([str(hex(item)) for item in self.ModbusDataReceived]))
         decodeStatus = self.decodeModbusFrame(self.ModbusDataReceived)
-        
+
         #Check if decoded properly!
         if (-1 == decodeStatus):
+            print("!> Visualisation: Decode Status Error")
             self.ui.lineEditResponse.setText("CRC ERROR!")
         elif (0x86 == self.ModbusFunction):
+            print("!> Visualisation: Register Read Only Error")
             self.ui.lineEditResponse.setText("REGISTER READ ONLY!")
         else:
             self.ui.lineEditResponse.setText(' '.join([str(item) for item in self.ModbusData]))
@@ -224,14 +270,47 @@ class ScadaApp(QtWidgets.QMainWindow):
 
             # code 0x07 - reading SINGLE register ( not implementing reading multiple registers )
             if (0x07 == self.ModbusFunction):
+                print("!> Visualisation: code 0x07 begin")
                 Address_16 = self.ModbusLastAddressUsed
                 Value_16 = (self.ModbusData[2]<<8) | self.ModbusData[3]
             # code 0x06 - repeat response from writing )
             elif (0x06 == self.ModbusFunction):
+                print("!> Visualisation: code 0x06 begin")
                 # get written data address and value from response
                 Address_16 = (self.ModbusData[1]<<8) | self.ModbusData[2]
                 Value_16 = (self.ModbusData[3]<<8) | self.ModbusData[4]
+                print("!> Visualisation: Counter address and value")
+
+                # update data in given register UI segment
+                if (200 == Address_16):
+                    print("!> Visualisation: Setting value at register 200")
+                    self.ui.lineEditValue_6.setText(str(Value_16))
+                elif (202 == Address_16):
+                    print("!> Visualisation: Setting value at register 202")
+                    self.ui.lineEditValue_7.setText(str(Value_16))
+                elif (210 == Address_16):
+                    print("!> Visualisation: Setting value at register 210")
+                    self.ui.lineEditValue_8.setText(str(Value_16))
+                elif (211 == Address_16):
+                    print("!> Visualisation: Setting value at register 211")
+                    self.ui.lineEditValue_9.setText(str(Value_16))
+                elif (225 == Address_16):
+                    print("!> Visualisation: Setting value at register 225")
+                    self.ui.lineEditValue_10.setText(str(Value_16))
+                elif (301 == Address_16):
+                    self.Register301Value = Value_16
+                    print("!> Visualisation: Setting value at register 300.0")
+                    self.ui.lineEditValue_11.setText(str((Value_16 & 0b0000000000000001)>0))
+                elif (302 == Address_16):
+                    self.Register302Value = Value_16
+                    print("!> Visualisation: Setting value at register 302.0 and 302.1")
+                    self.ui.lineEditValue_12.setText(str((Value_16 & 0b0000000000000001)>0))
+                    self.ui.lineEditValue_13.setText(str((Value_16 & 0b0000000000000010)>1))
+                else:
+                    print("!> Visualisation: Register error, received:" + str(Address_16))
+                    self.ui.lineEditResponse.setText("REGISTER ERROR")
             else:
+                print("!> Visualisation: Function code error")
                 self.ui.lineEditResponse.setText("FUNCTION CODE ERROR")
 
 if __name__ == "__main__":
