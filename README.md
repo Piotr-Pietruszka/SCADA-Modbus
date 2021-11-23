@@ -4,7 +4,7 @@
 First of all you need to clone this repo:
 
 ```console
-git clone git@github.com:ela-compil/fm0x_dev_board_serial_converter.git
+git clone git@github.com:Piotr-Pietruszka/SCADA-Modbus.git
 ```
 
 Then you need to use programs defined below to run the program from source
