@@ -51,9 +51,11 @@ class ScadaApp(QtWidgets.QMainWindow):
 
         # Declare Instance Variables used for Modbus
         self.ModbusAddress = 0
+        self.ModbusLastAddressUsed = 0
         self.ModbusFunction = 0
+        self.ModbusLastFunctionUsed = 0
         self.ModbusData = []  # Array with data. Use functions append and pop to add and remove data bytes
-        self.ModbusCRC = [0, 0]
+        self.ModbusCRC = []
         self.ModbusDataToTransmit = []
         self.ModbusDataReceived = []
         self.ExpectedReceiveLength = 0
@@ -64,7 +66,7 @@ class ScadaApp(QtWidgets.QMainWindow):
         Write packet to serial port
         :return: None
         """
-        print(f"Sending: {element}")
+        #print(f"Sending: {element}")
 
         address = self.reg_addresses[element]
         lineEdit = self.lineEdits_dict[element]
@@ -89,7 +91,9 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
                                  IModbusData=ModbusData)
 
+        self.ui.logsBrowser.append("OUT: "+' '.join([str(hex(int.from_bytes(item, "big"))) for item in self.ModbusDataToTransmit]))
         # write packet to serial port
+        self.ExpectedReceiveLength = len(self.ModbusDataToTransmit)
         print("!> Writing to Port")
         try:
             self.serialPort.write(b''.join(self.ModbusDataToTransmit))
@@ -119,15 +123,16 @@ class ScadaApp(QtWidgets.QMainWindow):
                 # Compose packet from bytes, get value from it
                 rec = self.serialPort.read()  # Read one byte
 
-                rec_int = fixedint.UInt32.from_bytes(rec)
+                #rec_int = fixedint.UInt32.from_bytes(rec)
+                rec_int = int.from_bytes(rec, "big")
                 self.ui.lineEditResponse.setText("{:x}".format(rec_int))
                 # print(type(rec))
-                print(rec_int)
+                # print(rec_int)
                 self.ModbusDataReceived.append(rec_int)
 
-        if (self.ExpectedReceiveLength == len(self.ModbusDataReceived)):
-            self.stop_read = True
-            self.ProcessModbusFrame()
+            if (self.ExpectedReceiveLength == len(self.ModbusDataReceived)):
+                self.stop_read = True
+                self.ProcessModbusFrame()
 
     def closeEvent(self, event):
         print("!> calling closeEvent \n")
@@ -140,14 +145,23 @@ class ScadaApp(QtWidgets.QMainWindow):
 
 # Decode the data from rawData
     def decodeModbusFrame(self, rawData):
-        print("!> calling decodeModbusFrame")
+        print("!> calling decodeModbusFrame, Data: ")
+        print(rawData)
+        print("Data length:")
+        print(len(rawData))
         # Check if CRC is correct
-        self.ModbusCRC[0] = rawData[len(rawData) - 2]
-        self.ModbusCRC[1] = rawData[len(rawData) - 1]
+        byte1 = rawData[len(rawData) - 2]
+        byte1 = rawData[len(rawData) - 1]
+        self.ModbusCRC = [rawData[len(rawData) - 2], rawData[len(rawData) - 1]]
         rawData.pop(len(rawData) - 1)
         rawData.pop(len(rawData) - 1)
         ModbusCRC_16 = (self.ModbusCRC[1]<<8) | self.ModbusCRC[0]
-        CalculatedCRC_16 = libscrc.modbus(rawData)
+        tempRawData = []
+        for byte in rawData:
+            tempRawData.append(byte.to_bytes(length=1, byteorder='big'))
+        CalculatedCRC_16 = (libscrc.modbus(b''.join(tempRawData))).to_bytes(length=2, byteorder='little')
+        tempCalculatedCRC_16 = [CalculatedCRC_16[0], CalculatedCRC_16[1]]
+        CalculatedCRC_16 = (tempCalculatedCRC_16[1]<<8) | tempCalculatedCRC_16[0]
         if (CalculatedCRC_16 != ModbusCRC_16):
             return -1
 
@@ -156,9 +170,12 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.ModbusFunction = rawData[0]
         
         i = 0
+        self.ModbusData = []
         for byte in rawData:
-            self.ModbusData[i] = byte
+            self.ModbusData.append(byte)
             i = i+1
+        self.ModbusFunction = self.ModbusData[0]
+
         return 1
 
 # Encode the data into self.ModbusDataToTransmit
@@ -184,15 +201,38 @@ class ScadaApp(QtWidgets.QMainWindow):
     def PrepareModbusFrame(self, IModbusAddr, IModbusFcn, IModbusData):
         print("!> calling PreprateModbusFrame")
         self.ModbusAddress = IModbusAddr
+        self.ModbusLastAddressUsed = IModbusAddr
         self.ModbusFunction = IModbusFcn
+        self.ModbusLastFunctionUsed = IModbusFcn
         self.ModbusData = IModbusData
         self.encodeModbusFrame()
 
 # Process frame - only when frame if fully received!
     def ProcessModbusFrame(self):
         print("!> calling ProcessModbusFrame")
-        self.decodeModbusFrame(self.ModbusDataReceived)
-        # - Write behaviour algorithm here!!!
+        self.ui.logsBrowser.append("IN:    "+' '.join([str(hex(item)) for item in self.ModbusDataReceived]))
+        decodeStatus = self.decodeModbusFrame(self.ModbusDataReceived)
+        
+        #Check if decoded properly!
+        if (-1 == decodeStatus):
+            self.ui.lineEditResponse.setText("CRC ERROR!")
+        elif (0x86 == self.ModbusFunction):
+            self.ui.lineEditResponse.setText("REGISTER READ ONLY!")
+        else:
+            self.ui.lineEditResponse.setText(' '.join([str(item) for item in self.ModbusData]))
+            # No match-case since using Python pre-3.10
+
+            # code 0x07 - reading SINGLE register ( not implementing reading multiple registers )
+            if (0x07 == self.ModbusFunction):
+                Address_16 = self.ModbusLastAddressUsed
+                Value_16 = (self.ModbusData[2]<<8) | self.ModbusData[3]
+            # code 0x06 - repeat response from writing )
+            elif (0x06 == self.ModbusFunction):
+                # get written data address and value from response
+                Address_16 = (self.ModbusData[1]<<8) | self.ModbusData[2]
+                Value_16 = (self.ModbusData[3]<<8) | self.ModbusData[4]
+            else:
+                self.ui.lineEditResponse.setText("FUNCTION CODE ERROR")
 
 if __name__ == "__main__":
     # TODO: Make flag "is_writing", and if that flag it not set and 'stop_read' is set, start cyclic reading of needed registers.
