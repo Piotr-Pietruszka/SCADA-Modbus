@@ -1,0 +1,7 @@
+__pycache__/
+.idea/
+ProjectCode/__pycache__/
+ProjectCode/code/__pycache__/
+ProjectCode/.idea/
+SCADA_symulator.exe
+own_stuff.py

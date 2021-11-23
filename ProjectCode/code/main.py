@@ -13,7 +13,9 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.serialPort = serial.Serial(port="COM5")
+        self.serialPort = serial.Serial(port="COM5",
+                                        timeout=0.004,  # 4 ms
+                                        inter_byte_timeout=0.002)  # 2 ms
         self.i = 0  # Temp - to send response after reading
 
         self.reg_addresses = { # - register adresses  of non-binary outputs to set
@@ -26,7 +28,6 @@ class ScadaApp(QtWidgets.QMainWindow):
             "ZalWentNaw": bytearray(b'\x01\x2E'),       # 302.0
             "ZalWentWyw": bytearray(b'\x01\x2E'),       # 302.1
         }
-
 
         self.lineEdits_dict = { # GUI lineEditWrite IDs
             "SilZawNagWst": self.ui.lineEditWrite_1,
@@ -63,13 +64,19 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.Register301Value = 0
         self.Register302Value = 0
 
+        # Start polling values
+        self.startUpdateThread()
+
+
     def writeFrame(self, element):
-        print("!> Calling writeFrame")
         """
         Write packet to serial port
         :return: None
         """
-        #print(f"Sending: {element}")
+        print("!> Calling writeFrame")
+        self.is_updating = False  # clear updating flag - stop polling registers
+        while not self.is_writing:  # wait till current register update finishes
+            time.sleep(0.05)
 
         address = self.reg_addresses[element]
         lineEdit = self.lineEdits_dict[element]
@@ -91,6 +98,7 @@ class ScadaApp(QtWidgets.QMainWindow):
                 error_msg_box.setWindowTitle("Error")
                 error_msg_box.setText('Wrong value given')
                 x = error_msg_box.exec_()
+                self.startUpdateThread()
                 return x
             ModbusData = address + write_val_bytes
             self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
@@ -131,6 +139,7 @@ class ScadaApp(QtWidgets.QMainWindow):
                 error_msg_box.setWindowTitle("Error")
                 error_msg_box.setText('Wrong value given')
                 x = error_msg_box.exec_()
+                self.startUpdateThread()
                 return x
             ModbusData = address + write_val_bytes
             self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
@@ -146,15 +155,72 @@ class ScadaApp(QtWidgets.QMainWindow):
             self.serialPort.write(b''.join(self.ModbusDataToTransmit))
         except Exception as e:
             print(str(e))
+            self.startUpdateThread()
             return
 
         self.ModbusDataReceived.clear()
 
-        # Start reading thread
+        # Read response
         self.stop_read = False
         self.read_thread = threading.Thread(target=self.readModbus)
         self.read_thread.start()
 
+        # Keep updating
+        self.startUpdateThread()
+
+    def readCommand(self, start_address, no_regs):
+        """
+        Write readCommand - frame with function code = 0x03
+        :param start_address: first address to read
+        :param no_regs: number of registers to read
+        :return:
+        """
+        print("!> calling readCommand")
+        start_address = start_address.to_bytes(length=2, byteorder='big')
+        no_regs = no_regs.to_bytes(length=2, byteorder='big')
+        ModbusData = start_address + no_regs
+        self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x03',
+                                IModbusData=ModbusData)
+
+        # write packet to serial port
+        self.ExpectedReceiveLength = len(self.ModbusDataToTransmit)
+        print("!> Writing to Port")
+        try:
+            self.serialPort.write(b''.join(self.ModbusDataToTransmit))
+        except Exception as e:
+            print(str(e))
+            return
+
+        self.ModbusDataReceived.clear()
+        # Read response for read command
+        self.stop_read = False
+        self.read_thread = threading.Thread(target=self.readModbus)
+        self.read_thread.start()
+
+    def startUpdateThread(self):
+        """
+        Just to wrap up starting update thread
+        """
+        self.is_writing = False  # reading flag cleared
+        self.is_updating = True  # update flag set
+        self.update_thread = threading.Thread(target=self.updateValues)  # Start updating thread
+        self.update_thread.start()
+
+    def updateValues(self):
+        """
+        Polling register values, to keep them up-to-date
+        :return:
+        """
+        print("!> calling updateValues")
+        while self.is_updating:
+            print("updating values!")
+            # TODO: add iterating over different registers to read (every loop iteration - different register)
+            self.readCommand(start_address=0x0A, no_regs=2)  # write read command
+
+            if not self.is_updating:  # additional exit condition - too speed writing up
+                break
+            time.sleep(1)
+        self.is_writing = True
 
     def readModbus(self):
         print("!> calling readModbus")
@@ -162,24 +228,22 @@ class ScadaApp(QtWidgets.QMainWindow):
         Reading from serial port
         :return:
         """
-
         while not self.stop_read:
-            # Wait until there is data waiting in the serial buffer
+            # Wait until there is data waiting in the serial buffer (first byte comes)
             if self.serialPort.in_waiting > 0:
 
                 # Compose packet from bytes, get value from it
-                rec = self.serialPort.read()  # Read one byte
+                rec = self.serialPort.read(20)  # Read whole frame - inter_byte_timeout ensures single frame read
+                print(f"rec: {rec}\n")
+                self.ModbusDataReceived.extend([b for b in rec])
 
-                #rec_int = fixedint.UInt32.from_bytes(rec)
-                rec_int = int.from_bytes(rec, "big")
-                self.ui.lineEditResponse.setText("{:x}".format(rec_int))
-                # print(type(rec))
-                # print(rec_int)
-                self.ModbusDataReceived.append(rec_int)
-
-            if (self.ExpectedReceiveLength == len(self.ModbusDataReceived)):
                 self.stop_read = True
                 self.ProcessModbusFrame()
+                # self.ui.lineEditResponse.setText("{:x}".format(rec_int))
+
+            # if (self.ExpectedReceiveLength == len(self.ModbusDataReceived)):
+            #     self.stop_read = True
+            #     self.ProcessModbusFrame()
 
     def closeEvent(self, event):
         print("!> calling closeEvent \n")
@@ -188,6 +252,10 @@ class ScadaApp(QtWidgets.QMainWindow):
         """
         self.stop_read = True
         self.read_thread.join()
+
+        self.is_updating = False
+        self.update_thread.join()
+
         event.accept()
 
 # Decode the data from rawData
