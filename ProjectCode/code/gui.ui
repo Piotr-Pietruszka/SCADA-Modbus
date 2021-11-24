@@ -47,7 +47,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Odpowiedz na zmiane</string>
+     <string>Ostatnia odpowiedz:</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEditResponse">

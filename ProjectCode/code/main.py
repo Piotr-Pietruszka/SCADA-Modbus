@@ -18,6 +18,21 @@ class ScadaApp(QtWidgets.QMainWindow):
                                         inter_byte_timeout=0.002)  # 2 ms
         self.i = 0  # Temp - to send response after reading
 
+        self.poll_id = 0
+        self.poll_id_reg_addresses = { # - used to poll specific register
+            0: 0x000A,      # 10
+            1: 0x000E,      # 14
+            2: 0x0064,      # 100
+            3: 0x0065,      # 101
+            4: 0x00C8,      # 200
+            5: 0x00CA,      # 202
+            6: 0x00D2,      # 210
+            7: 0x00D3,      # 211
+            8: 0x00E1,      # 225
+            9: 0x012D,      # 301
+            10: 0x012E,     # 302
+        }
+
         self.reg_addresses = { # - register adresses  of non-binary outputs to set
             "SilZawNagWst": bytearray(b'\x00\xC8'),     # 200
             "SilZawChl": bytearray(b'\x00\xCA'),        # 202
@@ -52,7 +67,7 @@ class ScadaApp(QtWidgets.QMainWindow):
 
         # Declare Instance Variables used for Modbus
         self.ModbusAddress = 0
-        self.ModbusLastAddressUsed = 0
+        self.ModbusLastRegAddressUsed = 0
         self.ModbusFunction = 0
         self.ModbusLastFunctionUsed = 0
         self.ModbusData = []  # Array with data. Use functions append and pop to add and remove data bytes
@@ -176,6 +191,10 @@ class ScadaApp(QtWidgets.QMainWindow):
         :return:
         """
         print("!> calling readCommand")
+        self.ModbusLastRegAddressUsed = start_address
+        #expected amount of received data is:
+        # ctrl addr + function code + amount of read bytes + 2*registers amount + CRC (2 bytes)
+        self.ExpectedReceiveLength = 1 + 1 + 1 + 2*no_regs + 2
         start_address = start_address.to_bytes(length=2, byteorder='big')
         no_regs = no_regs.to_bytes(length=2, byteorder='big')
         ModbusData = start_address + no_regs
@@ -183,7 +202,6 @@ class ScadaApp(QtWidgets.QMainWindow):
                                 IModbusData=ModbusData)
 
         # write packet to serial port
-        self.ExpectedReceiveLength = len(self.ModbusDataToTransmit)
         print("!> Writing to Port")
         try:
             self.serialPort.write(b''.join(self.ModbusDataToTransmit))
@@ -214,8 +232,8 @@ class ScadaApp(QtWidgets.QMainWindow):
         print("!> calling updateValues")
         while self.is_updating:
             print("updating values!")
-            # TODO: add iterating over different registers to read (every loop iteration - different register)
-            self.readCommand(start_address=0x0A, no_regs=2)  # write read command
+            self.readCommand(start_address=self.poll_id_reg_addresses[self.poll_id], no_regs=2)  # write read command
+            self.poll_id = (self.poll_id + 1)%11
 
             if not self.is_updating:  # additional exit condition - too speed writing up
                 break
@@ -313,7 +331,6 @@ class ScadaApp(QtWidgets.QMainWindow):
     def PrepareModbusFrame(self, IModbusAddr, IModbusFcn, IModbusData):
         print("!> calling PreprateModbusFrame")
         self.ModbusAddress = IModbusAddr
-        self.ModbusLastAddressUsed = IModbusAddr
         self.ModbusFunction = IModbusFcn
         self.ModbusLastFunctionUsed = IModbusFcn
         self.ModbusData = IModbusData
@@ -336,10 +353,10 @@ class ScadaApp(QtWidgets.QMainWindow):
             self.ui.lineEditResponse.setText(' '.join([str(item) for item in self.ModbusData]))
             # No match-case since using Python pre-3.10
 
-            # code 0x07 - reading SINGLE register ( not implementing reading multiple registers )
-            if (0x07 == self.ModbusFunction):
-                print("!> Visualisation: code 0x07 begin")
-                Address_16 = self.ModbusLastAddressUsed
+            # code 0x03 - reading SINGLE register ( not implementing reading multiple registers )
+            if (0x03 == self.ModbusFunction):
+                print("!> Visualisation: code 0x03 begin")
+                Address_16 = self.ModbusLastRegAddressUsed
                 Value_16 = (self.ModbusData[2]<<8) | self.ModbusData[3]
             # code 0x06 - repeat response from writing )
             elif (0x06 == self.ModbusFunction):
@@ -347,39 +364,53 @@ class ScadaApp(QtWidgets.QMainWindow):
                 # get written data address and value from response
                 Address_16 = (self.ModbusData[1]<<8) | self.ModbusData[2]
                 Value_16 = (self.ModbusData[3]<<8) | self.ModbusData[4]
-                print("!> Visualisation: Counter address and value")
-
-                # update data in given register UI segment
-                if (200 == Address_16):
-                    print("!> Visualisation: Setting value at register 200")
-                    self.ui.lineEditValue_6.setText(str(Value_16))
-                elif (202 == Address_16):
-                    print("!> Visualisation: Setting value at register 202")
-                    self.ui.lineEditValue_7.setText(str(Value_16))
-                elif (210 == Address_16):
-                    print("!> Visualisation: Setting value at register 210")
-                    self.ui.lineEditValue_8.setText(str(Value_16))
-                elif (211 == Address_16):
-                    print("!> Visualisation: Setting value at register 211")
-                    self.ui.lineEditValue_9.setText(str(Value_16))
-                elif (225 == Address_16):
-                    print("!> Visualisation: Setting value at register 225")
-                    self.ui.lineEditValue_10.setText(str(Value_16))
-                elif (301 == Address_16):
-                    self.Register301Value = Value_16
-                    print("!> Visualisation: Setting value at register 300.0")
-                    self.ui.lineEditValue_11.setText(str((Value_16 & 0b0000000000000001)>0))
-                elif (302 == Address_16):
-                    self.Register302Value = Value_16
-                    print("!> Visualisation: Setting value at register 302.0 and 302.1")
-                    self.ui.lineEditValue_12.setText(str((Value_16 & 0b0000000000000001)>0))
-                    self.ui.lineEditValue_13.setText(str((Value_16 & 0b0000000000000010)>1))
-                else:
-                    print("!> Visualisation: Register error, received:" + str(Address_16))
-                    self.ui.lineEditResponse.setText("REGISTER ERROR")
             else:
                 print("!> Visualisation: Function code error")
                 self.ui.lineEditResponse.setText("FUNCTION CODE ERROR")
+                return -1
+
+
+            # update data in given register UI segment
+            if (10 == Address_16):
+                print("!> Visualisation: Setting value at register 10")
+                self.ui.lineEditValue_1.setText(str(Value_16))
+            elif (14 == Address_16):
+                print("!> Visualisation: Setting value at register 14")
+                self.ui.lineEditValue_2.setText(str(Value_16))
+            elif (100 == Address_16):
+                print("!> Visualisation: Setting value at register 100.0")
+                self.ui.lineEditValue_3.setText(str((Value_16 & 0b0000000000000001)>0))
+            elif (101 == Address_16):
+                print("!> Visualisation: Setting value at register 101.0 and 101.4")
+                self.ui.lineEditValue_4.setText(str((Value_16 & 0b0000000000000001)>0))
+                self.ui.lineEditValue_5.setText(str((Value_16 & 0b0000000000010000)>1))
+            elif (200 == Address_16):
+                print("!> Visualisation: Setting value at register 200")
+                self.ui.lineEditValue_6.setText(str(Value_16 * 100/255))
+            elif (202 == Address_16):
+                print("!> Visualisation: Setting value at register 202")
+                self.ui.lineEditValue_7.setText(str(Value_16 * 100/255))
+            elif (210 == Address_16):
+                print("!> Visualisation: Setting value at register 210")
+                self.ui.lineEditValue_8.setText(str(Value_16 * 100/255))
+            elif (211 == Address_16):
+                print("!> Visualisation: Setting value at register 211")
+                self.ui.lineEditValue_9.setText(str(Value_16 * 100/255))
+            elif (225 == Address_16):
+                print("!> Visualisation: Setting value at register 225")
+                self.ui.lineEditValue_10.setText(str(Value_16 * 100/255))
+            elif (301 == Address_16):
+                self.Register301Value = Value_16
+                print("!> Visualisation: Setting value at register 300.0")
+                self.ui.lineEditValue_11.setText(str((Value_16 & 0b0000000000000001)>0))
+            elif (302 == Address_16):
+                self.Register302Value = Value_16
+                print("!> Visualisation: Setting value at register 302.0 and 302.1")
+                self.ui.lineEditValue_12.setText(str((Value_16 & 0b0000000000000001)>0))
+                self.ui.lineEditValue_13.setText(str((Value_16 & 0b0000000000000010)>1))
+            else:
+                print("!> Visualisation: Register error, received:" + str(Address_16))
+                self.ui.lineEditResponse.setText("REGISTER ERROR")
 
 if __name__ == "__main__":
     # TODO: Make flag "is_writing", and if that flag it not set and 'stop_read' is set, start cyclic reading of needed registers.

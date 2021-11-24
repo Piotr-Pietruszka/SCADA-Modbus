@@ -276,7 +276,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButtonSend_1.setText(_translate("MainWindow", "Wyślij"))
-        self.label.setText(_translate("MainWindow", "Odpowiedz na zmiane"))
+        self.label.setText(_translate("MainWindow", "Ostatnia odpowiedz:"))
         self.label_2.setText(_translate("MainWindow", "Siłownik zaworu nagrzewnicy wstępnej 0-255"))
         self.label_4.setText(_translate("MainWindow", "Siłownik zaworu chłodnicy 0-255"))
         self.pushButtonSend_2.setText(_translate("MainWindow", "Wyślij"))
