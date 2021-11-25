@@ -73,7 +73,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Siłownik zaworu nagrzewnicy wstępnej 0-255</string>
+     <string>Siłownik zaworu nagrzewnicy wstępnej [%]</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -99,7 +99,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Siłownik zaworu chłodnicy 0-255</string>
+     <string>Siłownik zaworu chłodnicy [%]</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -163,8 +163,8 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;!PROGRAM START!&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2';&quot;&gt;!PROGRAM START!&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2';&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
@@ -257,12 +257,12 @@ p, li { white-space: pre-wrap; }
      <rect>
       <x>90</x>
       <y>50</y>
-      <width>131</width>
+      <width>191</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Czujnik temp. zewnetrznej</string>
+     <string>Czujnik temp. zewnetrznej [C]</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_11">
@@ -270,12 +270,12 @@ p, li { white-space: pre-wrap; }
      <rect>
       <x>90</x>
       <y>110</y>
-      <width>201</width>
+      <width>211</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Czujnik temp. powietrza wywiewanego</string>
+     <string>Czujnik temp. powietrza wywiewanego [C]</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_12">
@@ -467,7 +467,7 @@ p, li { white-space: pre-wrap; }
      </rect>
     </property>
     <property name="text">
-     <string>Predkość obrotowa wentylatora nawiewu 0-255</string>
+     <string>Predkość obrotowa wentylatora nawiewu [%]</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -506,7 +506,7 @@ p, li { white-space: pre-wrap; }
      </rect>
     </property>
     <property name="text">
-     <string>Predkość obrotowa wentylatora wywiewu 0-255</string>
+     <string>Predkość obrotowa wentylatora wywiewu [%]</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -545,7 +545,7 @@ p, li { white-space: pre-wrap; }
      </rect>
     </property>
     <property name="text">
-     <string>Załączenie pompy nagrzewnicy wstępnej 0-255</string>
+     <string>Załączenie pompy nagrzewnicy wstępnej 0-1</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -584,7 +584,7 @@ p, li { white-space: pre-wrap; }
      </rect>
     </property>
     <property name="text">
-     <string>Recyrkulacja 0-255</string>
+     <string>Recyrkulacja [%]</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -922,6 +922,214 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="scaledContents">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_b_3">
+    <property name="geometry">
+     <rect>
+      <x>469</x>
+      <y>529</y>
+      <width>23</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_b_4">
+    <property name="geometry">
+     <rect>
+      <x>213</x>
+      <y>451</y>
+      <width>23</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_b_5">
+    <property name="geometry">
+     <rect>
+      <x>596</x>
+      <y>350</y>
+      <width>23</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_b_11">
+    <property name="geometry">
+     <rect>
+      <x>433</x>
+      <y>541</y>
+      <width>23</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_b_12">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>481</y>
+      <width>23</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_b_13">
+    <property name="geometry">
+     <rect>
+      <x>358</x>
+      <y>382</y>
+      <width>23</width>
+      <height>15</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_f_1">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>547</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_f_2">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>448</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_bj_6">
+    <property name="geometry">
+     <rect>
+      <x>388</x>
+      <y>556</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_bj_7">
+    <property name="geometry">
+     <rect>
+      <x>539</x>
+      <y>554</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_bj_8">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>540</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_bj_9">
+    <property name="geometry">
+     <rect>
+      <x>159</x>
+      <y>374</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_bj_10">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>440</y>
+      <width>41</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>X</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

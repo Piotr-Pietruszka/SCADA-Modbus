@@ -5,6 +5,19 @@ from gui import *
 import time
 import threading
 
+Color = {
+    0: "background-color: red",
+    1: "background-color: green"
+}
+Turn = {
+    0: "OFF",
+    1: "ON"
+}
+Sign = {
+    0: "+",
+    1: "-"
+}
+
 
 class ScadaApp(QtWidgets.QMainWindow):
     def __init__(self):
@@ -82,7 +95,6 @@ class ScadaApp(QtWidgets.QMainWindow):
         # Start polling values
         self.startUpdateThread()
 
-
     def writeFrame(self, element):
         """
         Write packet to serial port
@@ -90,8 +102,10 @@ class ScadaApp(QtWidgets.QMainWindow):
         """
         print("!> Calling writeFrame")
         self.is_updating = False  # clear updating flag - stop polling registers
+        time.sleep(0.004)  # 4ms wait for inter-frame silent period
         while not self.is_writing:  # wait till current register update finishes
             time.sleep(0.05)
+        self.update_thread.join()
 
         address = self.reg_addresses[element]
         lineEdit = self.lineEdits_dict[element]
@@ -105,9 +119,10 @@ class ScadaApp(QtWidgets.QMainWindow):
             print("!> Writing 2 bytes")
             try:
                 write_val_string = lineEdit.text()
-                write_val_bytes = int(write_val_string).to_bytes(length=2, byteorder='big')
-                if (int(write_val_string) > 255):
+                write_val_int = round(float(write_val_string)*255.0/100.0)
+                if write_val_int > 255 or write_val_int < 0:
                     raise
+                write_val_bytes = write_val_int.to_bytes(length=2, byteorder='big')
             except:
                 error_msg_box = QtWidgets.QMessageBox()
                 error_msg_box.setWindowTitle("Error")
@@ -180,8 +195,8 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.read_thread = threading.Thread(target=self.readModbus)
         self.read_thread.start()
 
-        # Keep updating
-        self.startUpdateThread()
+        time.sleep(0.5)  # Wait for response before continuing update
+        self.startUpdateThread()  # Keep updating
 
     def readCommand(self, start_address, no_regs):
         """
@@ -249,19 +264,12 @@ class ScadaApp(QtWidgets.QMainWindow):
         while not self.stop_read:
             # Wait until there is data waiting in the serial buffer (first byte comes)
             if self.serialPort.in_waiting > 0:
-
                 # Compose packet from bytes, get value from it
                 rec = self.serialPort.read(20)  # Read whole frame - inter_byte_timeout ensures single frame read
-                print(f"rec: {rec}\n")
+                print(f"!> received raw data: {rec}\n")
                 self.ModbusDataReceived.extend([b for b in rec])
-
                 self.stop_read = True
                 self.ProcessModbusFrame()
-                # self.ui.lineEditResponse.setText("{:x}".format(rec_int))
-
-            # if (self.ExpectedReceiveLength == len(self.ModbusDataReceived)):
-            #     self.stop_read = True
-            #     self.ProcessModbusFrame()
 
     def closeEvent(self, event):
         print("!> calling closeEvent \n")
@@ -273,6 +281,7 @@ class ScadaApp(QtWidgets.QMainWindow):
 
         self.is_updating = False
         self.update_thread.join()
+        self.is_writing = True
 
         event.accept()
 
@@ -369,51 +378,81 @@ class ScadaApp(QtWidgets.QMainWindow):
                 self.ui.lineEditResponse.setText("FUNCTION CODE ERROR")
                 return -1
 
-
             # update data in given register UI segment
-            if (10 == Address_16):
+            if (10 == Address_16):  # 1 Fix
                 print("!> Visualisation: Setting value at register 10")
-                self.ui.lineEditValue_1.setText(str(Value_16))
-            elif (14 == Address_16):
+                sign = Sign[(Value_16 & 0b1000000000000000) >> 15]
+                int_part = ((Value_16 & 0b0111111111100000) >> 5) if sign == "+" else ~(
+                            (Value_16 & 0b0111111111100000) >> 5)
+                Value_s = f"{sign}{round(int_part + (Value_16 & 0b0000000000011111)*1.0/32.0, 2)}"
+                self.ui.lineEditValue_1.setText(Value_s)
+                self.ui.label_f_1.setText(Value_s)
+            elif (14 == Address_16):  # 2 Fix
                 print("!> Visualisation: Setting value at register 14")
-                self.ui.lineEditValue_2.setText(str(Value_16))
-            elif (100 == Address_16):
+                sign = Sign[(Value_16 & 0b1000000000000000) >> 15]
+                int_part = ((Value_16 & 0b0111111111100000) >> 5) if sign == "+" else ~(
+                            (Value_16 & 0b0111111111100000) >> 5)
+                Value_s = f"{sign}{round(int_part + (Value_16 & 0b0000000000011111) * 1.0 / 32.0, 2)}"
+                self.ui.lineEditValue_2.setText(Value_s)
+                self.ui.label_f_2.setText(Value_s)
+            elif (100 == Address_16):  # 3 B
                 print("!> Visualisation: Setting value at register 100.0")
                 self.ui.lineEditValue_3.setText(str((Value_16 & 0b0000000000000001)>0))
-            elif (101 == Address_16):
+                # self.ui.label_v_1.setVisible((Value_16 & 0b0000000000000001) > 0)
+                self.ui.label_b_3.setText(Turn[Value_16 & 0b0000000000000001])
+                self.ui.label_b_3.setStyleSheet(Color[Value_16 & 0b0000000000000001])
+            elif (101 == Address_16):  # 4, 5 B
                 print("!> Visualisation: Setting value at register 101.0 and 101.4")
                 self.ui.lineEditValue_4.setText(str((Value_16 & 0b0000000000000001)>0))
+                self.ui.label_b_4.setText(Turn[Value_16 & 0b0000000000000001])
+                self.ui.label_b_4.setStyleSheet(Color[Value_16 & 0b0000000000000001])
+
                 self.ui.lineEditValue_5.setText(str((Value_16 & 0b0000000000010000)>1))
-            elif (200 == Address_16):
+                self.ui.label_b_5.setText(Turn[(Value_16 & 0b0000000000010000) >> 4])
+                self.ui.label_b_5.setStyleSheet(Color[(Value_16 & 0b0000000000010000) >> 4])
+            elif (200 == Address_16):  # 6 bj
                 print("!> Visualisation: Setting value at register 200")
                 self.ui.lineEditValue_6.setText(str(Value_16 * 100/255))
-            elif (202 == Address_16):
+                self.ui.label_bj_6.setText(f"{round(Value_16*100/255, 2)}%")
+            elif (202 == Address_16):  # 7 bj
                 print("!> Visualisation: Setting value at register 202")
                 self.ui.lineEditValue_7.setText(str(Value_16 * 100/255))
-            elif (210 == Address_16):
+                self.ui.label_bj_7.setText(f"{round(Value_16 * 100 / 255, 2)}%")
+            elif (210 == Address_16):  # 8 bj
                 print("!> Visualisation: Setting value at register 210")
                 self.ui.lineEditValue_8.setText(str(Value_16 * 100/255))
-            elif (211 == Address_16):
+                self.ui.label_bj_8.setText(f"{round(Value_16 * 100 / 255, 2)}%")
+            elif (211 == Address_16):  # 9 bj
                 print("!> Visualisation: Setting value at register 211")
                 self.ui.lineEditValue_9.setText(str(Value_16 * 100/255))
-            elif (225 == Address_16):
+                self.ui.label_bj_9.setText(f"{round(Value_16 * 100 / 255, 2)}%")
+            elif (225 == Address_16):  # 10 bj
                 print("!> Visualisation: Setting value at register 225")
                 self.ui.lineEditValue_10.setText(str(Value_16 * 100/255))
-            elif (301 == Address_16):
+                self.ui.label_bj_10.setText(f"{round(Value_16 * 100 / 255, 2)}%")
+            elif (301 == Address_16):  # 11 B
                 self.Register301Value = Value_16
                 print("!> Visualisation: Setting value at register 300.0")
                 self.ui.lineEditValue_11.setText(str((Value_16 & 0b0000000000000001)>0))
-            elif (302 == Address_16):
+                self.ui.label_b_11.setText(Turn[Value_16 & 0b0000000000000001])
+                self.ui.label_b_11.setStyleSheet(Color[Value_16 & 0b0000000000000001])
+            elif (302 == Address_16):  # 12, 13 B
                 self.Register302Value = Value_16
                 print("!> Visualisation: Setting value at register 302.0 and 302.1")
                 self.ui.lineEditValue_12.setText(str((Value_16 & 0b0000000000000001)>0))
+                self.ui.label_b_12.setText(Turn[Value_16 & 0b0000000000000001])
+                self.ui.label_b_12.setStyleSheet(Color[Value_16 & 0b0000000000000001])
+
                 self.ui.lineEditValue_13.setText(str((Value_16 & 0b0000000000000010)>1))
+                self.ui.label_b_13.setText(Turn[(Value_16 & 0b0000000000000010) >> 1])
+                self.ui.label_b_13.setStyleSheet(Color[(Value_16 & 0b0000000000000010) >> 1])
+
             else:
                 print("!> Visualisation: Register error, received:" + str(Address_16))
                 self.ui.lineEditResponse.setText("REGISTER ERROR")
 
+
 if __name__ == "__main__":
-    # TODO: Make flag "is_writing", and if that flag it not set and 'stop_read' is set, start cyclic reading of needed registers.
     # In order to update the values in case they change.
     import sys
     app = QtWidgets.QApplication(sys.argv)
