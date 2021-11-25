@@ -5,3 +5,5 @@ ProjectCode/code/__pycache__/
 ProjectCode/.idea/
 SCADA_symulator.exe
 own_stuff.py
+.gitignore
+Systemy SCADA*
