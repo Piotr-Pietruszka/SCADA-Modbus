@@ -1,5 +1,4 @@
 import serial
-import fixedint
 import libscrc
 from gui import *
 import time
@@ -92,8 +91,27 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.Register301Value = 0
         self.Register302Value = 0
 
+        # Controller address
+        self.controllerAddress = b'\x07'
+        self.ui.lineEditSave_1.setPlaceholderText(hex(int.from_bytes(self.controllerAddress, byteorder='big')))
+        self.ui.pushButtonSave_1.clicked.connect(self.changeAddress)
+
         # Start polling values
         self.startUpdateThread()
+
+
+    def changeAddress(self):
+
+        address_str = self.ui.lineEditSave_1.text()
+        try:
+            address_int = int(address_str, 16)
+            self.controllerAddress = address_int.to_bytes(length=1, byteorder='big')
+        except:
+            error_msg_box = QtWidgets.QMessageBox()
+            error_msg_box.setWindowTitle("Error")
+            error_msg_box.setText('Wrong value given')
+            x = error_msg_box.exec_()
+        self.ui.lineEditSave_1.setPlaceholderText(hex(int.from_bytes(self.controllerAddress, byteorder='big')))
 
     def writeFrame(self, element):
         """
@@ -131,7 +149,7 @@ class ScadaApp(QtWidgets.QMainWindow):
                 self.startUpdateThread()
                 return x
             ModbusData = address + write_val_bytes
-            self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
+            self.PrepareModbusFrame(IModbusAddr=self.controllerAddress, IModbusFcn=b'\x06',
                                     IModbusData=ModbusData)
         elif (("ZalPompNagWst" == element) or \
              ("ZalWentNaw" == element) or \
@@ -172,7 +190,7 @@ class ScadaApp(QtWidgets.QMainWindow):
                 self.startUpdateThread()
                 return x
             ModbusData = address + write_val_bytes
-            self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x06',
+            self.PrepareModbusFrame(IModbusAddr=self.controllerAddress, IModbusFcn=b'\x06',
                                     IModbusData=ModbusData)
         else:
             print("!> writeFrame: element error")
@@ -213,7 +231,7 @@ class ScadaApp(QtWidgets.QMainWindow):
         start_address = start_address.to_bytes(length=2, byteorder='big')
         no_regs = no_regs.to_bytes(length=2, byteorder='big')
         ModbusData = start_address + no_regs
-        self.PrepareModbusFrame(IModbusAddr=b'\x07', IModbusFcn=b'\x03',
+        self.PrepareModbusFrame(IModbusAddr=self.controllerAddress, IModbusFcn=b'\x03',
                                 IModbusData=ModbusData)
 
         # write packet to serial port
