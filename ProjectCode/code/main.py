@@ -24,10 +24,13 @@ class ScadaApp(QtWidgets.QMainWindow):
         super(ScadaApp, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
-        self.serialPort = serial.Serial(port="COM5",
-                                        timeout=0.004,  # 4 ms
-                                        inter_byte_timeout=0.002)  # 2 ms
+        self.COM_port = "COM5"
+        try:
+            self.serialPort = serial.Serial(self.COM_port,
+                                            timeout=0.004,  # 4 ms
+                                            inter_byte_timeout=0.002)  # 2 ms
+        except:
+            print(f"!> Could not open port: {self.COM_port}")
         self.i = 0  # Temp - to send response after reading
 
         self.poll_id = 0
@@ -96,8 +99,39 @@ class ScadaApp(QtWidgets.QMainWindow):
         self.ui.lineEditSave_1.setPlaceholderText(hex(int.from_bytes(self.controllerAddress, byteorder='big')))
         self.ui.pushButtonSave_1.clicked.connect(self.changeAddress)
 
+        # COM port
+        self.ui.lineEditSave_2.setPlaceholderText(self.COM_port)
+        self.ui.pushButtonSave_2.clicked.connect(self.changeCOM)
+
         # Start polling values
         self.startUpdateThread()
+
+    def changeCOM(self):
+        COM_port_temp = self.ui.lineEditSave_2.text()
+        valid_port = True
+        try:
+            self.serialPort.close()
+            self.serialPort = serial.Serial(COM_port_temp,
+                                            timeout=0.004,  # 4 ms
+                                            inter_byte_timeout=0.002)  # 2 ms
+        except:
+            valid_port = False
+            error_msg_box = QtWidgets.QMessageBox()
+            error_msg_box.setWindowTitle("Error")
+            error_msg_box.setText(f'Could not open {COM_port_temp}')
+            x = error_msg_box.exec_()
+
+        if valid_port:
+            self.COM_port = COM_port_temp
+            self.ui.lineEditSave_2.setPlaceholderText(self.COM_port)
+        else:
+            try:
+                self.serialPort.close()
+                self.serialPort = serial.Serial(self.COM_port,
+                                                timeout=0.004,  # 4 ms
+                                                inter_byte_timeout=0.002)  # 2 ms
+            except:
+                print(f"!> Could not open previous port: {self.COM_port}")
 
 
     def changeAddress(self):
